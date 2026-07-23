@@ -21,7 +21,8 @@ import com.bluenet.multiplexer.StreamMultiplexer
 class HostService : Service() {
 
     private val binder = HostBinder()
-    private var l2capServer: L2capServer? = null
+    var l2capServer: L2capServer? = null
+        private set
     private var activeMultiplexer: StreamMultiplexer? = null
     private var hostProxyManager: HostProxyManager? = null
 

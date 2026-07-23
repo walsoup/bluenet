@@ -51,7 +51,7 @@ class L2capClient(
             }
 
             socket = connectedSocket
-            onConnected(connectedSocket)
+            onConnected(connectedSocket!!)
         }, "L2capClientConnectThread").apply { start() }
     }
 
