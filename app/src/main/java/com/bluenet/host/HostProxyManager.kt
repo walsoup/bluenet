@@ -47,12 +47,16 @@ class HostProxyManager(
         executor.execute {
             try {
                 Log.d(TAG, "Host TCP connect target $targetIp:$targetPort for stream $streamId")
-                val socket = Socket(targetIp, targetPort)
+                val socket = Socket(targetIp, targetPort).apply {
+                    receiveBufferSize = 65536
+                    sendBufferSize = 65536
+                    tcpNoDelay = true
+                }
                 tcpSockets[streamId] = socket
 
                 // Start forward thread: Socket -> L2CAP
                 val inputStream = socket.getInputStream()
-                val readBuf = ByteArray(8192)
+                val readBuf = ByteArray(16384)
                 var bytesRead: Int
                 while (inputStream.read(readBuf).also { bytesRead = it } != -1) {
                     val data = readBuf.copyOf(bytesRead)

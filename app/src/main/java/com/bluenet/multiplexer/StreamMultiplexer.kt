@@ -34,7 +34,8 @@ class StreamMultiplexer(
     fun sendFrame(frame: Frame) {
         if (!isRunning.get()) return
         try {
-            frame.writeTo(dos)
+            val optimizedFrame = frame.compressIfBeneficial()
+            optimizedFrame.writeTo(dos)
         } catch (e: IOException) {
             Log.e(TAG, "Error sending frame streamId=${frame.streamId}", e)
             close()
@@ -46,7 +47,13 @@ class StreamMultiplexer(
         try {
             while (isRunning.get()) {
                 val frame = Frame.readFrom(dis) ?: break
-                onFrameReceived(frame)
+                if (frame.type == FrameType.COMPRESSED_DATA) {
+                    val decompressed = frame.decompressPayload()
+                    val normalizedFrame = Frame(FrameType.DATA, frame.streamId, decompressed)
+                    onFrameReceived(normalizedFrame)
+                } else {
+                    onFrameReceived(frame)
+                }
             }
         } catch (e: Exception) {
             if (isRunning.get()) {

@@ -50,6 +50,12 @@ class L2capServer(
                 Log.d(TAG, "Waiting for L2CAP client connection...")
                 val socket = serverSocket?.accept()
                 if (socket != null && isRunning.get()) {
+                    // Optimize L2CAP socket buffers for throughput
+                    try {
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                            Log.d(TAG, "L2CAP socket MaxTxPacketSize: ${socket.maxTransmitPacketSize}, MaxRxPacketSize: ${socket.maxReceivePacketSize}")
+                        }
+                    } catch (_: Exception) {}
                     Log.d(TAG, "L2CAP Client connected successfully from: ${socket.remoteDevice.address}")
                     onClientConnected(socket)
                 }

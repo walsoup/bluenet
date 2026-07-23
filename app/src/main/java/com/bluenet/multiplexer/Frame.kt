@@ -1,8 +1,11 @@
 package com.bluenet.multiplexer
 
+import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
+import java.util.zip.Deflater
+import java.util.zip.Inflater
 
 data class Frame(
     val type: FrameType,
@@ -19,6 +22,51 @@ data class Frame(
                 dos.write(payload)
             }
             dos.flush()
+        }
+    }
+
+    fun compressIfBeneficial(): Frame {
+        if (type != FrameType.DATA || payload.size < 64) return this
+
+        val deflater = Deflater(Deflater.BEST_SPEED)
+        deflater.setInput(payload)
+        deflater.finish()
+
+        val baos = ByteArrayOutputStream(payload.size)
+        val buffer = ByteArray(512)
+        while (!deflater.finished()) {
+            val count = deflater.deflate(buffer)
+            baos.write(buffer, 0, count)
+        }
+        deflater.end()
+
+        val compressed = baos.toByteArray()
+        // Only use compressed frame if size actually decreased
+        return if (compressed.size < payload.size - 4) {
+            Frame(FrameType.COMPRESSED_DATA, streamId, compressed)
+        } else {
+            this
+        }
+    }
+
+    fun decompressPayload(): ByteArray {
+        if (type != FrameType.COMPRESSED_DATA) return payload
+
+        val inflater = Inflater()
+        inflater.setInput(payload)
+        val baos = ByteArrayOutputStream(payload.size * 2)
+        val buffer = ByteArray(512)
+        try {
+            while (!inflater.finished()) {
+                val count = inflater.inflate(buffer)
+                if (count == 0) break
+                baos.write(buffer, 0, count)
+            }
+            inflater.end()
+            return baos.toByteArray()
+        } catch (e: Exception) {
+            inflater.end()
+            return payload
         }
     }
 

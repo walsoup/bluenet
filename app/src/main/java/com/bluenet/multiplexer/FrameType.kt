@@ -5,7 +5,8 @@ enum class FrameType(val code: Byte) {
     DATA(0x02),
     CLOSE(0x03),
     CONNECT_UDP(0x04),
-    KEEPALIVE(0x05);
+    KEEPALIVE(0x05),
+    COMPRESSED_DATA(0x06);
 
     companion object {
         fun fromCode(code: Byte): FrameType? {
