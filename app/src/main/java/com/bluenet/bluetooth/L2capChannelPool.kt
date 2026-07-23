@@ -17,7 +17,8 @@ class L2capChannelPool(
     private val globalStreamId = AtomicInteger(1)
 
     fun addChannel(socket: BluetoothSocket) {
-        val mp = StreamMultiplexer(
+        lateinit var mp: StreamMultiplexer
+        mp = StreamMultiplexer(
             inputStream = socket.inputStream,
             outputStream = socket.outputStream,
             onFrameReceived = onFrameReceived,

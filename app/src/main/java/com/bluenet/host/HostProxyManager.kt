@@ -25,7 +25,7 @@ class HostProxyManager(
         when (frame.type) {
             FrameType.CONNECT_TCP -> handleConnectTcp(frame)
             FrameType.CONNECT_UDP -> handleConnectUdp(frame)
-            FrameType.DATA -> handleData(frame)
+            FrameType.DATA, FrameType.COMPRESSED_DATA -> handleData(frame)
             FrameType.CLOSE -> handleClose(frame)
             FrameType.KEEPALIVE -> {
                 // Heartbeat response
