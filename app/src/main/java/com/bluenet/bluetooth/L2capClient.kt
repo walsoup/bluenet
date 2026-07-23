@@ -18,20 +18,40 @@ class L2capClient(
     @SuppressLint("MissingPermission")
     fun connect() {
         connectionThread = Thread({
-            try {
-                Log.d(TAG, "Attempting L2CAP connection to ${device.address} on PSM $psm")
-                // Android 10+ (API 29+) L2CAP Channel Connection
-                val l2capSocket = device.createInsecureL2capChannel(psm)
-                l2capSocket.connect()
-                socket = l2capSocket
+            var connectedSocket: BluetoothSocket? = null
 
-                Log.d(TAG, "L2CAP socket connected successfully to ${device.address}")
-                onConnected(l2capSocket)
-            } catch (e: IOException) {
-                Log.e(TAG, "L2CAP connection failed", e)
-                onError("Failed to connect via L2CAP: ${e.localizedMessage}")
-                disconnect()
+            // Attempt 1: L2CAP CoC (API 29+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q && psm > 1) {
+                try {
+                    Log.d(TAG, "Attempting L2CAP connection to ${device.address} on PSM $psm")
+                    val l2capSocket = device.createInsecureL2capChannel(psm)
+                    l2capSocket.connect()
+                    connectedSocket = l2capSocket
+                    Log.d(TAG, "L2CAP socket connected successfully to ${device.address}")
+                } catch (e: Exception) {
+                    Log.w(TAG, "L2CAP CoC connection failed, attempting RFCOMM fallback", e)
+                    connectedSocket = null
+                }
             }
+
+            // Attempt 2: RFCOMM Fallback socket
+            if (connectedSocket == null) {
+                try {
+                    Log.d(TAG, "Attempting RFCOMM connection to ${device.address} via UUID ${L2capServer.SERVICE_UUID}")
+                    val rfcommSocket = device.createInsecureRfcommSocketToServiceRecord(L2capServer.SERVICE_UUID)
+                    rfcommSocket.connect()
+                    connectedSocket = rfcommSocket
+                    Log.d(TAG, "RFCOMM socket connected successfully to ${device.address}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "RFCOMM fallback connection also failed", e)
+                    onError("Connection failed (L2CAP & RFCOMM): ${e.localizedMessage}")
+                    disconnect()
+                    return@Thread
+                }
+            }
+
+            socket = connectedSocket
+            onConnected(connectedSocket)
         }, "L2capClientConnectThread").apply { start() }
     }
 

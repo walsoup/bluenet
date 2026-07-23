@@ -1,12 +1,14 @@
 <resources>
     <string name="app_name">BlueNet</string>
-    <string name="title_host_mode">Host Mode (Tether Provider)</string>
-    <string name="title_client_mode">Client Mode (Tether Receiver)</string>
-    <string name="btn_start_host">Start Host L2CAP Server</string>
-    <string name="btn_stop_host">Stop Host Server</string>
-    <string name="btn_connect_client">Connect L2CAP VPN</string>
-    <string name="btn_disconnect_client">Disconnect VPN</string>
-    <string name="label_select_device">Select Paired Bluetooth Device:</string>
-    <string name="label_enter_psm">Host L2CAP PSM Number:</string>
-    <string name="status_idle">Status: Idle</string>
+    <string name="app_tagline">High-Speed Bluetooth Tethering Accelerator</string>
+    <string name="tab_host">Provide Data (Host)</string>
+    <string name="tab_client">Receive Data (Client)</string>
+    <string name="btn_start_host">Start Server &amp; Generate PIN</string>
+    <string name="btn_stop_host">Stop Server</string>
+    <string name="btn_auto_connect">Auto-Discover &amp; Connect</string>
+    <string name="btn_disconnect">Disconnect</string>
+    <string name="pairing_pin_label">Your Host Pairing Code:</string>
+    <string name="status_offline">Status: Offline</string>
+    <string name="select_device_label">Select Bluetooth Device:</string>
+    <string name="enter_pin_label">Enter Host Pairing Code:</string>
 </resources>

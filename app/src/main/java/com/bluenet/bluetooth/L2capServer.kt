@@ -8,6 +8,8 @@ import android.util.Log
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
+import java.util.UUID
+
 class L2capServer(
     private val bluetoothAdapter: BluetoothAdapter,
     private val onClientConnected: (BluetoothSocket) -> Unit,
@@ -20,6 +22,9 @@ class L2capServer(
     var psm: Int = -1
         private set
 
+    var isUsingRfcommFallback: Boolean = false
+        private set
+
     @SuppressLint("MissingPermission")
     fun start(): Boolean {
         if (!bluetoothAdapter.isEnabled) {
@@ -28,17 +33,33 @@ class L2capServer(
         }
 
         try {
-            // Android 10+ (API 29+) L2CAP Channel Creation
-            serverSocket = bluetoothAdapter.listenUsingInsecureL2capChannel()
-            psm = serverSocket?.psm ?: -1
-            Log.d(TAG, "L2CAP Server started listening on PSM: $psm")
+            // Attempt 1: Native L2CAP CoC (API 29+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                try {
+                    serverSocket = bluetoothAdapter.listenUsingInsecureL2capChannel()
+                    psm = serverSocket?.psm ?: -1
+                    isUsingRfcommFallback = false
+                    Log.d(TAG, "L2CAP Server started listening on PSM: $psm")
+                } catch (e: Exception) {
+                    Log.w(TAG, "L2CAP CoC listen failed, falling back to RFCOMM high-speed socket", e)
+                    serverSocket = null
+                }
+            }
+
+            // Attempt 2: RFCOMM Fallback socket
+            if (serverSocket == null) {
+                serverSocket = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(SERVICE_NAME, SERVICE_UUID)
+                psm = 1 // Virtual RFCOMM channel indicator
+                isUsingRfcommFallback = true
+                Log.d(TAG, "RFCOMM Fallback Server started listening with UUID $SERVICE_UUID")
+            }
 
             isRunning.set(true)
             workerThread = Thread({ listenLoop() }, "L2capServerThread").apply { start() }
             return true
         } catch (e: IOException) {
-            Log.e(TAG, "Failed to create L2CAP server socket", e)
-            onError("Failed to start L2CAP server: ${e.localizedMessage}")
+            Log.e(TAG, "Failed to create server socket", e)
+            onError("Failed to start Bluetooth server: ${e.localizedMessage}")
             stop()
             return false
         }
@@ -85,5 +106,7 @@ class L2capServer(
 
     companion object {
         private const val TAG = "L2capServer"
+        const val SERVICE_NAME = "BlueNetTether"
+        val SERVICE_UUID: UUID = UUID.fromString("8ce255c0-223a-11ee-be56-0242ac120002")
     }
 }

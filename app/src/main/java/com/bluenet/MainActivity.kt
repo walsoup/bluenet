@@ -12,6 +12,7 @@ import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,6 +22,7 @@ import com.bluenet.client.BlueNetVpnService
 import com.bluenet.databinding.ActivityMainBinding
 import com.bluenet.host.HostService
 import com.bluenet.utils.BluetoothUtils
+import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private var isVpnBound = false
 
     private var pairedDevices: List<BluetoothDevice> = emptyList()
+    private var currentHostPin: String = ""
 
     private val hostServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -70,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == RESULT_OK) {
             startClientVpn()
         } else {
-            Toast.makeText(this, "VPN Permission denied", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "VPN Permission required to accelerate tethering", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -79,15 +82,30 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        requestBluetoothPermissions()
+        setupModeSwitching()
         setupHostUi()
         setupClientUi()
+
+        requestBluetoothPermissions()
 
         val hostIntent = Intent(this, HostService::class.java)
         bindService(hostIntent, hostServiceConnection, Context.BIND_AUTO_CREATE)
 
         val vpnIntent = Intent(this, BlueNetVpnService::class.java)
         bindService(vpnIntent, vpnServiceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    private fun setupModeSwitching() {
+        binding.rgModeSelector.setOnCheckedChangeListener { _, checkedId ->
+            if (checkedId == R.id.rbHostMode) {
+                binding.cardHost.visibility = View.VISIBLE
+                binding.cardClient.visibility = View.GONE
+            } else {
+                binding.cardHost.visibility = View.GONE
+                binding.cardClient.visibility = View.VISIBLE
+                refreshPairedDevicesSafely()
+            }
+        }
     }
 
     private fun requestBluetoothPermissions() {
@@ -107,7 +125,31 @@ class MainActivity : AppCompatActivity() {
 
         if (missing.isNotEmpty()) {
             ActivityCompat.requestPermissions(this, missing.toTypedArray(), 100)
+        } else {
+            refreshPairedDevicesSafely()
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 100) {
+            refreshPairedDevicesSafely()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun refreshPairedDevicesSafely() {
+        try {
+            pairedDevices = BluetoothUtils.getPairedDevices(this)
+            val deviceNames = if (pairedDevices.isNotEmpty()) {
+                pairedDevices.map { "${it.name ?: "Bluetooth Device"} (${it.address})" }
+            } else {
+                listOf("No paired Bluetooth devices found")
+            }
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, deviceNames)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.spDevices.adapter = adapter
+        } catch (_: Exception) {}
     }
 
     private fun setupHostUi() {
@@ -115,15 +157,22 @@ class MainActivity : AppCompatActivity() {
             val service = hostService ?: return@setOnClickListener
             if (service.isServerRunning) {
                 service.stopHostServer()
+                currentHostPin = ""
+                binding.layoutPinContainer.visibility = View.GONE
                 updateHostUi()
             } else {
+                val generatedPin = String.format("%04d", Random.nextInt(1000, 9999))
+                currentHostPin = generatedPin
+                binding.tvPairingPin.text = generatedPin
+                binding.layoutPinContainer.visibility = View.VISIBLE
+
                 val intent = Intent(this, HostService::class.java)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(intent)
                 } else {
                     startService(intent)
                 }
-                service.startHostServer { statusText, psm ->
+                service.startHostServer { statusText, _ ->
                     runOnUiThread {
                         binding.tvHostStatus.text = statusText
                         updateHostUi()
@@ -133,13 +182,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun setupClientUi() {
-        pairedDevices = BluetoothUtils.getPairedDevices(this)
-        val deviceNames = pairedDevices.map { "${it.name ?: "Unknown"} (${it.address})" }
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, deviceNames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spDevices.adapter = adapter
+        refreshPairedDevicesSafely()
 
         binding.btnToggleClient.setOnClickListener {
             val service = vpnService ?: return@setOnClickListener
@@ -162,18 +206,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startClientVpn() {
+        if (pairedDevices.isEmpty()) {
+            Toast.makeText(this, "Pair both phones in Android Bluetooth Settings first", Toast.LENGTH_LONG).show()
+            return
+        }
+
         val selectedIndex = binding.spDevices.selectedItemPosition
         if (selectedIndex < 0 || selectedIndex >= pairedDevices.size) {
             Toast.makeText(this, "Select a paired Bluetooth device", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val psmText = binding.etPsm.text.toString()
-        val psm = psmText.toIntOrNull()
-        if (psm == null || psm <= 0) {
-            Toast.makeText(this, "Enter a valid PSM integer from Host phone", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val pinInput = binding.etPin.text.toString().trim()
+        val psm = pinInput.toIntOrNull() ?: 1 // Default to RFCOMM auto-discovery (1) if PIN/PSM left blank
 
         val device = pairedDevices[selectedIndex]
         val vpnIntent = Intent(this, BlueNetVpnService::class.java)
@@ -191,19 +236,21 @@ class MainActivity : AppCompatActivity() {
         val isRunning = hostService?.isServerRunning == true
         if (isRunning) {
             binding.btnToggleHost.text = getString(R.string.btn_stop_host)
-            binding.tvHostStatus.text = "Host Server Active on PSM: ${hostService?.currentPsm}"
+            val channelMode = if (hostService?.l2capServer?.isUsingRfcommFallback == true) "RFCOMM High-Speed" else "L2CAP CoC"
+            binding.tvHostStatus.text = "Host Server Active ($channelMode)"
         } else {
             binding.btnToggleHost.text = getString(R.string.btn_start_host)
-            binding.tvHostStatus.text = getString(R.string.status_idle)
+            binding.tvHostStatus.text = getString(R.string.status_offline)
+            binding.layoutPinContainer.visibility = View.GONE
         }
     }
 
     private fun updateClientUi() {
         val isConnected = vpnService?.isVpnConnected == true
         if (isConnected) {
-            binding.btnToggleClient.text = getString(R.string.btn_disconnect_client)
+            binding.btnToggleClient.text = getString(R.string.btn_disconnect)
         } else {
-            binding.btnToggleClient.text = getString(R.string.btn_connect_client)
+            binding.btnToggleClient.text = getString(R.string.btn_auto_connect)
         }
     }
 

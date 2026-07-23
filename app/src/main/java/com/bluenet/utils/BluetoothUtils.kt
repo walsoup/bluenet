@@ -10,11 +10,17 @@ object BluetoothUtils {
 
     @SuppressLint("MissingPermission")
     fun getPairedDevices(context: Context): List<BluetoothDevice> {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        val adapter = bluetoothManager.adapter ?: return emptyList()
-        return if (adapter.isEnabled) {
-            adapter.bondedDevices.toList()
-        } else {
+        return try {
+            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+            val adapter = bluetoothManager?.adapter ?: return emptyList()
+            if (adapter.isEnabled) {
+                adapter.bondedDevices?.toList() ?: emptyList()
+            } else {
+                emptyList()
+            }
+        } catch (e: SecurityException) {
+            emptyList()
+        } catch (e: Exception) {
             emptyList()
         }
     }
