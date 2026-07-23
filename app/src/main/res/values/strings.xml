@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">BlueNet</string>
+    <string name="title_host_mode">Host Mode (Tether Provider)</string>
+    <string name="title_client_mode">Client Mode (Tether Receiver)</string>
+    <string name="btn_start_host">Start Host L2CAP Server</string>
+    <string name="btn_stop_host">Stop Host Server</string>
+    <string name="btn_connect_client">Connect L2CAP VPN</string>
+    <string name="btn_disconnect_client">Disconnect VPN</string>
+    <string name="label_select_device">Select Paired Bluetooth Device:</string>
+    <string name="label_enter_psm">Host L2CAP PSM Number:</string>
+    <string name="status_idle">Status: Idle</string>
+</resources>
