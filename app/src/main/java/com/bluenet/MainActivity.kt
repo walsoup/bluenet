@@ -2,6 +2,7 @@ package com.bluenet
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.ComponentName
 import android.content.Context
@@ -266,7 +267,7 @@ class MainActivity : AppCompatActivity() {
         if (isConnected) {
             binding.btnToggleClient.text = getString(R.string.btn_disconnect)
         } else {
-            binding.btnToggleClient.text = getString(R.string.btn_auto_connect)
+            binding.btnToggleClient.text = getString(R.string.btn_connect_mac)
         }
     }
 
