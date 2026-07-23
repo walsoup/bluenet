@@ -1,14 +1,14 @@
 <resources>
     <string name="app_name">BlueNet</string>
     <string name="app_tagline">High-Speed Bluetooth Tethering Accelerator</string>
-    <string name="tab_host">Provide Data (Host)</string>
-    <string name="tab_client">Receive Data (Client)</string>
-    <string name="btn_start_host">Start Server &amp; Generate PIN</string>
+    <string name="tab_host">Host Mode</string>
+    <string name="tab_client">Client Mode</string>
+    <string name="btn_start_host">Start Server</string>
     <string name="btn_stop_host">Stop Server</string>
-    <string name="btn_auto_connect">Auto-Discover &amp; Connect</string>
+    <string name="btn_connect_mac">Connect to Host MAC</string>
     <string name="btn_disconnect">Disconnect</string>
-    <string name="pairing_pin_label">Your Host Pairing Code:</string>
+    <string name="host_mac_label">Host Device MAC Address:</string>
     <string name="status_offline">Status: Offline</string>
-    <string name="select_device_label">Select Bluetooth Device:</string>
-    <string name="enter_pin_label">Enter Host Pairing Code:</string>
+    <string name="select_device_label">Or Select Paired Device:</string>
+    <string name="enter_mac_label">Enter Host MAC Address (e.g. 00:11:22:33:44:55):</string>
 </resources>

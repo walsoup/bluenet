@@ -100,9 +100,17 @@ class MainActivity : AppCompatActivity() {
             if (checkedId == R.id.rbHostMode) {
                 binding.cardHost.visibility = View.VISIBLE
                 binding.cardClient.visibility = View.GONE
+                binding.rbHostMode.setBackgroundColor(android.graphics.Color.parseColor("#1E88E5"))
+                binding.rbHostMode.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
+                binding.rbClientMode.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
+                binding.rbClientMode.setTextColor(android.graphics.Color.parseColor("#000000"))
             } else {
                 binding.cardHost.visibility = View.GONE
                 binding.cardClient.visibility = View.VISIBLE
+                binding.rbClientMode.setBackgroundColor(android.graphics.Color.parseColor("#1E88E5"))
+                binding.rbClientMode.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
+                binding.rbHostMode.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
+                binding.rbHostMode.setTextColor(android.graphics.Color.parseColor("#000000"))
                 refreshPairedDevicesSafely()
             }
         }
@@ -157,15 +165,9 @@ class MainActivity : AppCompatActivity() {
             val service = hostService ?: return@setOnClickListener
             if (service.isServerRunning) {
                 service.stopHostServer()
-                currentHostPin = ""
-                binding.layoutPinContainer.visibility = View.GONE
+                binding.layoutMacContainer.visibility = View.GONE
                 updateHostUi()
             } else {
-                val generatedPin = String.format("%04d", Random.nextInt(1000, 9999))
-                currentHostPin = generatedPin
-                binding.tvPairingPin.text = generatedPin
-                binding.layoutPinContainer.visibility = View.VISIBLE
-
                 val intent = Intent(this, HostService::class.java)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     startForegroundService(intent)
@@ -205,26 +207,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun startClientVpn() {
-        if (pairedDevices.isEmpty()) {
-            Toast.makeText(this, "Pair both phones in Android Bluetooth Settings first", Toast.LENGTH_LONG).show()
+        var targetMac = binding.etMacAddress.text.toString().trim().uppercase()
+
+        if (targetMac.isEmpty()) {
+            val selectedIndex = binding.spDevices.selectedItemPosition
+            if (selectedIndex >= 0 && selectedIndex < pairedDevices.size) {
+                targetMac = pairedDevices[selectedIndex].address
+            }
+        }
+
+        if (targetMac.isEmpty() || !BluetoothAdapter.checkBluetoothAddress(targetMac)) {
+            Toast.makeText(this, "Enter a valid MAC address (e.g. AA:BB:CC:DD:EE:FF) or select a paired device", Toast.LENGTH_LONG).show()
             return
         }
 
-        val selectedIndex = binding.spDevices.selectedItemPosition
-        if (selectedIndex < 0 || selectedIndex >= pairedDevices.size) {
-            Toast.makeText(this, "Select a paired Bluetooth device", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val pinInput = binding.etPin.text.toString().trim()
-        val psm = pinInput.toIntOrNull() ?: 1 // Default to RFCOMM auto-discovery (1) if PIN/PSM left blank
-
-        val device = pairedDevices[selectedIndex]
         val vpnIntent = Intent(this, BlueNetVpnService::class.java)
         startService(vpnIntent)
 
-        vpnService?.connectToHost(device.address, psm) { statusText ->
+        vpnService?.connectToHost(targetMac, 1) { statusText ->
             runOnUiThread {
                 binding.tvClientStatus.text = statusText
                 updateClientUi()
@@ -232,16 +234,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("MissingPermission")
     private fun updateHostUi() {
         val isRunning = hostService?.isServerRunning == true
         if (isRunning) {
             binding.btnToggleHost.text = getString(R.string.btn_stop_host)
             val channelMode = if (hostService?.l2capServer?.isUsingRfcommFallback == true) "RFCOMM High-Speed" else "L2CAP CoC"
             binding.tvHostStatus.text = "Host Server Active ($channelMode)"
+
+            // Show MAC address on Host Card
+            try {
+                val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager
+                val adapter = bluetoothManager?.adapter
+                val mac = adapter?.address
+                val deviceName = adapter?.name ?: "Host Device"
+                val displayAddress = if (mac != null && mac != "02:00:00:00:00:00") mac else deviceName
+                binding.tvHostMac.text = displayAddress
+                binding.layoutMacContainer.visibility = View.VISIBLE
+            } catch (_: Exception) {
+                binding.layoutMacContainer.visibility = View.GONE
+            }
         } else {
             binding.btnToggleHost.text = getString(R.string.btn_start_host)
             binding.tvHostStatus.text = getString(R.string.status_offline)
-            binding.layoutPinContainer.visibility = View.GONE
+            binding.layoutMacContainer.visibility = View.GONE
         }
     }
 

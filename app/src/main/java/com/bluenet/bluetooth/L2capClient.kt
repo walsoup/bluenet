@@ -34,7 +34,7 @@ class L2capClient(
                 }
             }
 
-            // Attempt 2: RFCOMM Fallback socket
+            // Attempt 2: RFCOMM Fallback socket via Service UUID
             if (connectedSocket == null) {
                 try {
                     Log.d(TAG, "Attempting RFCOMM connection to ${device.address} via UUID ${L2capServer.SERVICE_UUID}")
@@ -43,8 +43,23 @@ class L2capClient(
                     connectedSocket = rfcommSocket
                     Log.d(TAG, "RFCOMM socket connected successfully to ${device.address}")
                 } catch (e: Exception) {
-                    Log.e(TAG, "RFCOMM fallback connection also failed", e)
-                    onError("Connection failed (L2CAP & RFCOMM): ${e.localizedMessage}")
+                    Log.w(TAG, "RFCOMM UUID socket failed, trying reflection channel fallback", e)
+                    connectedSocket = null
+                }
+            }
+
+            // Attempt 3: Reflection RFCOMM channel 1 (Direct hardware channel connection)
+            if (connectedSocket == null) {
+                try {
+                    Log.d(TAG, "Attempting Reflection RFCOMM channel 1 to ${device.address}")
+                    val m = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
+                    val rawSocket = m.invoke(device, 1) as BluetoothSocket
+                    rawSocket.connect()
+                    connectedSocket = rawSocket
+                    Log.d(TAG, "Reflection RFCOMM channel 1 connected successfully to ${device.address}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "All Bluetooth connection attempts (L2CAP CoC, RFCOMM UUID, Reflection) failed", e)
+                    onError("Bluetooth socket error: ${e.localizedMessage}")
                     disconnect()
                     return@Thread
                 }
