@@ -97,21 +97,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupModeSwitching() {
-        binding.rgModeSelector.setOnCheckedChangeListener { _, checkedId ->
-            if (checkedId == R.id.rbHostMode) {
+        binding.rgModeSelector.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            if (checkedId == R.id.btnHostMode) {
                 binding.cardHost.visibility = View.VISIBLE
                 binding.cardClient.visibility = View.GONE
-                binding.rbHostMode.setBackgroundColor(android.graphics.Color.parseColor("#1E88E5"))
-                binding.rbHostMode.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
-                binding.rbClientMode.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
-                binding.rbClientMode.setTextColor(android.graphics.Color.parseColor("#000000"))
             } else {
                 binding.cardHost.visibility = View.GONE
                 binding.cardClient.visibility = View.VISIBLE
-                binding.rbClientMode.setBackgroundColor(android.graphics.Color.parseColor("#1E88E5"))
-                binding.rbClientMode.setTextColor(android.graphics.Color.parseColor("#FFFFFF"))
-                binding.rbHostMode.setBackgroundColor(android.graphics.Color.parseColor("#E0E0E0"))
-                binding.rbHostMode.setTextColor(android.graphics.Color.parseColor("#000000"))
                 refreshPairedDevicesSafely()
             }
         }

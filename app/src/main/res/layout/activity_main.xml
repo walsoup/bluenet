@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_light"
+    android:background="?attr/colorSurface"
     android:padding="16dp">
 
     <LinearLayout
@@ -17,14 +17,15 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="24dp">
 
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+            <com.google.android.material.imageview.ShapeableImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:src="@drawable/ic_launcher_foreground"
-                android:background="@color/primary"
-                android:padding="4dp"
+                android:background="?attr/colorPrimaryContainer"
+                android:padding="8dp"
+                app:shapeAppearanceOverlay="?attr/shapeAppearanceCornerExtraLarge"
                 android:contentDescription="App Logo" />
 
             <LinearLayout
@@ -32,62 +33,51 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:layout_marginStart="12dp">
+                android:layout_marginStart="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_name"
-                    android:textSize="22sp"
+                    android:textAppearance="?attr/textAppearanceHeadlineMedium"
                     android:textStyle="bold"
-                    android:textColor="#0D47A1"/>
+                    android:textColor="?attr/colorPrimary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/app_tagline"
-                    android:textSize="12sp"
-                    android:textColor="#555555"/>
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"/>
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Mode Selector Radio Buttons -->
-        <RadioGroup
+        <!-- Mode Selector -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/rgModeSelector"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:orientation="horizontal"
-            android:checkedButton="@id/rbClientMode"
-            android:background="#E0E0E0"
-            android:padding="2dp"
-            android:layout_marginBottom="16dp">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@+id/btnClientMode">
 
-            <RadioButton
-                android:id="@+id/rbClientMode"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnClientMode"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:button="@null"
-                android:background="#1E88E5"
-                android:gravity="center"
                 android:text="@string/tab_client"
-                android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold"/>
+                style="?attr/materialButtonOutlinedStyle"/>
 
-            <RadioButton
-                android:id="@+id/rbHostMode"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnHostMode"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:button="@null"
-                android:background="#E0E0E0"
-                android:gravity="center"
                 android:text="@string/tab_host"
-                android:textColor="#000000"
-                android:textSize="15sp"
-                android:textStyle="bold"/>
-        </RadioGroup>
+                style="?attr/materialButtonOutlinedStyle"/>
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <!-- HOST PANEL -->
         <com.google.android.material.card.MaterialCardView
@@ -95,84 +85,87 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="#FFFFFF">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:cardBackgroundColor="?attr/colorSurface">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Host Mode (Tether Provider)"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#0D47A1"/>
+                    android:textAppearance="?attr/textAppearanceTitleLarge"
+                    android:textColor="?attr/colorPrimary"/>
 
                 <TextView
                     android:id="@+id/tvHostStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/status_offline"
-                    android:textSize="14sp"
-                    android:textColor="#333333"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginTop="8dp"/>
 
                 <!-- Host MAC and PSM Container -->
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/layoutMacContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:background="#E3F2FD"
-                    android:padding="16dp"
+                    app:cardBackgroundColor="?attr/colorSecondaryContainer"
+                    app:cardElevation="0dp"
+                    app:cardCornerRadius="12dp"
                     android:visibility="gone"
-                    android:layout_marginTop="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
+                    android:layout_marginTop="20dp">
+                    
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/host_mac_label"
-                        android:textSize="12sp"
-                        android:textColor="#0D47A1"
-                        android:textStyle="bold"/>
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tvHostMac"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="AA:BB:CC:DD:EE:FF"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#002171"
-                        android:layout_marginTop="4dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/host_mac_label"
+                            android:textAppearance="?attr/textAppearanceLabelMedium"
+                            android:textColor="?attr/colorOnSecondaryContainer"/>
 
-                    <TextView
-                        android:id="@+id/tvHostPsm"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="PSM: 12345"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#002171"
-                        android:layout_marginTop="4dp"/>
-                </LinearLayout>
+                        <TextView
+                            android:id="@+id/tvHostMac"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="AA:BB:CC:DD:EE:FF"
+                            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSecondaryContainer"
+                            android:layout_marginTop="4dp"/>
+
+                        <TextView
+                            android:id="@+id/tvHostPsm"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PSM: 12345"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSecondaryContainer"
+                            android:layout_marginTop="4dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnToggleHost"
                     android:layout_width="match_parent"
-                    android:layout_height="54dp"
+                    android:layout_height="56dp"
                     android:text="@string/btn_start_host"
-                    android:textSize="16sp"
-                    android:textColor="#FFFFFF"
-                    app:backgroundTint="#0D47A1"
-                    app:cornerRadius="8dp"
-                    android:layout_marginTop="20dp"/>
+                    android:layout_marginTop="24dp"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -181,106 +174,91 @@
             android:id="@+id/cardClient"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="3dp"
-            app:cardBackgroundColor="#FFFFFF">
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="?attr/colorOutlineVariant"
+            app:cardBackgroundColor="?attr/colorSurface">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Client Mode (Tether Receiver)"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#0D47A1"/>
-
-                <!-- MAC Address Input -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/enter_mac_label"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="16dp"/>
+                    android:textAppearance="?attr/textAppearanceTitleLarge"
+                    android:textColor="?attr/colorPrimary"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="6dp">
+                    android:layout_marginTop="24dp">
 
-                    <EditText
-                        android:id="@+id/etMacAddress"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="0dp"
                         android:layout_weight="2"
-                        android:layout_height="48dp"
-                        android:hint="AA:BB:CC:DD:EE:FF"
-                        android:textColorHint="#999999"
-                        android:textColor="#000000"
-                        android:textSize="15sp"
-                        android:inputType="textCapCharacters"
-                        android:background="@android:drawable/editbox_background"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"/>
+                        android:layout_height="wrap_content"
+                        android:hint="Host MAC Address"
+                        style="?attr/textInputStyleOutlined">
 
-                    <EditText
-                        android:id="@+id/etPsm"
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etMacAddress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapCharacters" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="0dp"
                         android:layout_weight="1"
-                        android:layout_height="48dp"
+                        android:layout_height="wrap_content"
                         android:hint="PSM"
-                        android:textColorHint="#999999"
-                        android:textColor="#000000"
-                        android:textSize="15sp"
-                        android:inputType="number"
-                        android:background="@android:drawable/editbox_background"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:layout_marginStart="8dp"/>
+                        android:layout_marginStart="12dp"
+                        style="?attr/textInputStyleOutlined">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPsm"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number" />
+                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <!-- Or Dropdown Selector -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/select_device_label"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="16dp"/>
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginTop="24dp"/>
 
                 <Spinner
                     android:id="@+id/spDevices"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="56dp"
                     android:background="@android:drawable/btn_dropdown"
-                    android:layout_marginTop="6dp"/>
+                    android:layout_marginTop="8dp"/>
 
                 <TextView
                     android:id="@+id/tvClientStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/status_offline"
-                    android:textSize="14sp"
-                    android:textColor="#333333"
-                    android:layout_marginTop="16dp"/>
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="24dp"/>
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnToggleClient"
                     android:layout_width="match_parent"
-                    android:layout_height="54dp"
+                    android:layout_height="56dp"
                     android:text="@string/btn_connect_mac"
-                    android:textSize="16sp"
-                    android:textColor="#FFFFFF"
-                    app:backgroundTint="#1E88E5"
-                    app:cornerRadius="8dp"
-                    android:layout_marginTop="20dp"/>
+                    android:layout_marginTop="24dp"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
