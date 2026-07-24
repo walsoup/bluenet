@@ -204,7 +204,7 @@
                         android:layout_weight="2"
                         android:layout_height="wrap_content"
                         android:hint="Host MAC Address"
-                        style="?attr/textInputStyleOutlined">
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etMacAddress"
@@ -219,7 +219,7 @@
                         android:layout_height="wrap_content"
                         android:hint="PSM"
                         android:layout_marginStart="12dp"
-                        style="?attr/textInputStyleOutlined">
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPsm"
