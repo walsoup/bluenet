@@ -77,7 +77,6 @@ class TunPacketRouter(
         if (version != 4) return // Process IPv4
 
         val protocol = packet[9] // 6 for TCP, 17 for UDP
-        val srcIp = packet.copyOfRange(12, 16)
         val dstIp = packet.copyOfRange(16, 20)
 
         val ihl = (versionAndIhl and 0x0F) * 4
