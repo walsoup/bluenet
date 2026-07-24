@@ -129,6 +129,7 @@ class HostService : Service() {
             .build()
     }
 
+    @SuppressLint("MissingPermission")
     private fun updateNotification(content: String) {
         val manager = getSystemService(NotificationManager::class.java)
         manager?.notify(NOTIFICATION_ID, createNotification(content))
