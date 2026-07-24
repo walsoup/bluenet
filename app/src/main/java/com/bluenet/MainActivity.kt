@@ -211,6 +211,8 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("MissingPermission")
     private fun startClientVpn() {
         var targetMac = binding.etMacAddress.text.toString().trim().uppercase()
+        val psmText = binding.etPsm.text.toString().trim()
+        val psm = psmText.toIntOrNull() ?: 1
 
         if (targetMac.isEmpty()) {
             val selectedIndex = binding.spDevices.selectedItemPosition
@@ -227,7 +229,7 @@ class MainActivity : AppCompatActivity() {
         val vpnIntent = Intent(this, BlueNetVpnService::class.java)
         startService(vpnIntent)
 
-        vpnService?.connectToHost(targetMac, 1) { statusText ->
+        vpnService?.connectToHost(targetMac, psm) { statusText ->
             runOnUiThread {
                 binding.tvClientStatus.text = statusText
                 updateClientUi()
@@ -251,6 +253,15 @@ class MainActivity : AppCompatActivity() {
                 val deviceName = adapter?.name ?: "Host Device"
                 val displayAddress = if (mac != null && mac != "02:00:00:00:00:00") mac else deviceName
                 binding.tvHostMac.text = displayAddress
+
+                val psm = hostService?.currentPsm ?: -1
+                if (psm > 0 && channelMode == "L2CAP CoC") {
+                    binding.tvHostPsm.text = "PSM: $psm"
+                    binding.tvHostPsm.visibility = View.VISIBLE
+                } else {
+                    binding.tvHostPsm.visibility = View.GONE
+                }
+
                 binding.layoutMacContainer.visibility = View.VISIBLE
             } catch (_: Exception) {
                 binding.layoutMacContainer.visibility = View.GONE

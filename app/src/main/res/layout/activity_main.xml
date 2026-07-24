@@ -122,7 +122,7 @@
                     android:textColor="#333333"
                     android:layout_marginTop="8dp"/>
 
-                <!-- Host MAC Address Container -->
+                <!-- Host MAC and PSM Container -->
                 <LinearLayout
                     android:id="@+id/layoutMacContainer"
                     android:layout_width="match_parent"
@@ -148,6 +148,16 @@
                         android:layout_height="wrap_content"
                         android:text="AA:BB:CC:DD:EE:FF"
                         android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#002171"
+                        android:layout_marginTop="4dp"/>
+
+                    <TextView
+                        android:id="@+id/tvHostPsm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PSM: 12345"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#002171"
                         android:layout_marginTop="4dp"/>
@@ -199,19 +209,41 @@
                     android:textColor="#000000"
                     android:layout_marginTop="16dp"/>
 
-                <EditText
-                    android:id="@+id/etMacAddress"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:hint="AA:BB:CC:DD:EE:FF"
-                    android:textColorHint="#999999"
-                    android:textColor="#000000"
-                    android:textSize="15sp"
-                    android:inputType="textCapCharacters"
-                    android:background="@android:drawable/editbox_background"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:layout_marginTop="6dp"/>
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+
+                    <EditText
+                        android:id="@+id/etMacAddress"
+                        android:layout_width="0dp"
+                        android:layout_weight="2"
+                        android:layout_height="48dp"
+                        android:hint="AA:BB:CC:DD:EE:FF"
+                        android:textColorHint="#999999"
+                        android:textColor="#000000"
+                        android:textSize="15sp"
+                        android:inputType="textCapCharacters"
+                        android:background="@android:drawable/editbox_background"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"/>
+
+                    <EditText
+                        android:id="@+id/etPsm"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="48dp"
+                        android:hint="PSM"
+                        android:textColorHint="#999999"
+                        android:textColor="#000000"
+                        android:textSize="15sp"
+                        android:inputType="number"
+                        android:background="@android:drawable/editbox_background"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:layout_marginStart="8dp"/>
+                </LinearLayout>
 
                 <!-- Or Dropdown Selector -->
                 <TextView

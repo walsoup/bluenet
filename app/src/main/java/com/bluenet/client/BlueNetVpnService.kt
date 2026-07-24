@@ -30,7 +30,12 @@ class BlueNetVpnService : VpnService() {
         fun getService(): BlueNetVpnService = this@BlueNetVpnService
     }
 
-    override fun onBind(intent: Intent?): IBinder = binder
+    override fun onBind(intent: Intent?): IBinder? {
+        if (intent?.action == VpnService.SERVICE_INTERFACE) {
+            return super.onBind(intent)
+        }
+        return binder
+    }
 
     @SuppressLint("MissingPermission")
     fun connectToHost(deviceAddress: String, psm: Int, onStatusChanged: (String) -> Unit) {

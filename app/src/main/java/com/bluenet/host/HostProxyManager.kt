@@ -84,6 +84,7 @@ class HostProxyManager(
             try {
                 Log.d(TAG, "Host UDP connect target $targetIp:$targetPort for stream $streamId")
                 val udpSocket = DatagramSocket()
+                udpSocket.connect(targetIp, targetPort)
                 udpSockets[streamId] = udpSocket
 
                 // Receiving UDP response from remote server -> L2CAP

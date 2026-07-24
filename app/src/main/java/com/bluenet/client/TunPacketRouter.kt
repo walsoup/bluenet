@@ -89,7 +89,12 @@ class TunPacketRouter(
         val connectionKey = "$protocol:$srcPort:${dstIp.joinToString(".")}:$dstPort"
         var streamId = activeStreams[connectionKey]
 
-        val payloadOffset = ihl + if (protocol.toInt() == 6) 20 else 8 // TCP header min 20, UDP 8
+        val payloadOffset = if (protocol.toInt() == 6) {
+            val dataOffset = (packet[ihl + 12].toInt() and 0xF0) ushr 4
+            ihl + (dataOffset * 4)
+        } else {
+            ihl + 8 // UDP header is 8 bytes
+        }
         val payload = if (packet.size > payloadOffset) packet.copyOfRange(payloadOffset, packet.size) else ByteArray(0)
 
         if (streamId == null) {
@@ -128,6 +133,22 @@ class TunPacketRouter(
         // Destination IP 10.0.8.2
         packet[16] = 10.toByte(); packet[17] = 0.toByte(); packet[18] = 8.toByte(); packet[19] = 2.toByte()
 
+        // Checksum initially 0
+        packet[10] = 0
+        packet[11] = 0
+
+        var sum = 0
+        for (i in 0 until 20 step 2) {
+            val word = ((packet[i].toInt() and 0xFF) shl 8) or (packet[i + 1].toInt() and 0xFF)
+            sum += word
+        }
+        while ((sum shr 16) > 0) {
+            sum = (sum and 0xFFFF) + (sum shr 16)
+        }
+        val checksum = sum.inv() and 0xFFFF
+        packet[10] = (checksum shr 8).toByte()
+        packet[11] = checksum.toByte()
+
         // Source Port
         packet[headerLen] = (srcPort shr 8).toByte()
         packet[headerLen + 1] = srcPort.toByte()
@@ -135,6 +156,13 @@ class TunPacketRouter(
         // Destination Port
         packet[headerLen + 2] = (dstPort shr 8).toByte()
         packet[headerLen + 3] = dstPort.toByte()
+
+        if (protocol.toInt() == 17) {
+            // UDP Length
+            val udpLen = transportLen + payload.size
+            packet[headerLen + 4] = (udpLen shr 8).toByte()
+            packet[headerLen + 5] = udpLen.toByte()
+        }
 
         // Payload
         if (payload.isNotEmpty()) {
