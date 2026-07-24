@@ -129,8 +129,12 @@ class HostService : Service() {
             .build()
     }
 
-    @SuppressLint("MissingPermission")
     private fun updateNotification(content: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                return
+            }
+        }
         val manager = getSystemService(NotificationManager::class.java)
         manager?.notify(NOTIFICATION_ID, createNotification(content))
     }
